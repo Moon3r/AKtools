@@ -30,8 +30,7 @@ public class AliOperator {
 
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         try {
-            DescribeInstancesResponse response = iAcsClient.getAcsResponse(request);
-            return response;
+            return iAcsClient.getAcsResponse(request);
         } catch (ClientException clientException) {
             clientException.printStackTrace();
             return null;

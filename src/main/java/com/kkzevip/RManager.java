@@ -8,6 +8,7 @@ import com.kkzevip.utils.TableData;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.text.AsyncBoxView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -41,27 +42,40 @@ public class RManager {
         queryButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String accessKeyId = accessKeyIdText.getText();
-                String accessKeySecret = accessKeySecretText.getText();
-                if (accessKeyId.equals("") || accessKeySecret.equals("")) {
-                    notice.setText("请检查AccessKeyID和AccessKeySecret!");
-                    return;
-                }
-                queryButton.setText("正在查询");
-                queryButton.setEnabled(false);
-                AliOperator aliOperator = new AliOperator(accessKeyId, accessKeySecret);
-                try {
-//                    aliOperator.Connect();
-                    DescribeInstancesResponse response = aliOperator.testConnect();
-                    TableData tableData = new TableData();
-                    tableData.updateTable(response, table1);
-                    queryButton.setText("查询");
-                    queryButton.setEnabled(true);
-                } catch (ClientException clientException) {
-                    queryButton.setText("查询");
-                    queryButton.setEnabled(true);
-                    clientException.printStackTrace();
-                }
+                notice.setText("正在查询...");
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        String accessKeyId = accessKeyIdText.getText();
+                        String accessKeySecret = accessKeySecretText.getText();
+                        if (accessKeyId.equals("") || accessKeySecret.equals("")) {
+                            queryButton.setText("查询");
+                            queryButton.setEnabled(true);
+                            notice.setText("请检查AccessKeyID和AccessKeySecret!");
+                            return;
+                        }
+                        AliOperator aliOperator = new AliOperator(accessKeyId, accessKeySecret);
+
+                        if (aliOperator.equals(null)) {
+                            queryButton.setText("查询");
+                            queryButton.setEnabled(true);
+                            notice.setText("请检查AccessKeyID和AccessKeySecret!");
+                        } else {
+                            try {
+                                //                    aliOperator.Connect();
+                                DescribeInstancesResponse response = aliOperator.testConnect();
+                                TableData tableData = new TableData();
+                                tableData.updateTable(response, table1);
+                            } catch (ClientException clientException) {
+                                clientException.printStackTrace();
+                            } finally {
+                                queryButton.setText("查询");
+                                queryButton.setEnabled(true);
+                                notice.setText("查询完成");
+                            }
+                        }
+                    }
+                });
             }
         });
     }
