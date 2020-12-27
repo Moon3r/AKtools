@@ -11,14 +11,13 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import javax.swing.text.AsyncBoxView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.List;
 
-public class RManager {
+public class AKTools {
     private JLabel accessKeyIDLabel;
     private JLabel accessKeySecretLabel;
     private JPanel rootPanel;
@@ -52,7 +51,7 @@ public class RManager {
         describeTextArea.setText(dtext.toString());
     }
 
-    public RManager() {
+    public AKTools() {
 
         initTable();
 
@@ -159,8 +158,8 @@ public class RManager {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("RManager");
-        frame.setContentPane(new RManager().rootPanel);
+        JFrame frame = new JFrame("AKTools\tby T00ls MoR03r");
+        frame.setContentPane(new AKTools().rootPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);
