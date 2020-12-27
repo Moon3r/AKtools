@@ -1,16 +1,15 @@
 package com.kkzevip.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
-import com.aliyuncs.ecs.model.v20140526.DescribeInstancesRequest;
-import com.aliyuncs.ecs.model.v20140526.DescribeInstancesResponse;
+import com.aliyuncs.ecs.model.v20140526.*;
 import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.exceptions.ServerException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
+import org.apache.commons.codec.binary.Base64;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class AliOperator {
 
@@ -18,38 +17,102 @@ public class AliOperator {
     private String accessKeySecret = "";
     public Map<String, String> map = new HashMap();
 
+    public Map<String, String> getMap() {
+        return map;
+    }
+
     public AliOperator(String accessKeyId, String accessKeySecret) {
         setAccessKeyId(accessKeyId);
         setAccessKeySecret(accessKeySecret);
         initRegion();
     }
 
-    public DescribeInstancesResponse testConnect() throws  ClientException {
+    public InvokeCommandResponse invokeCommand(String regionID, String insID, String commandID) {
+        IClientProfile iClientProfile = DefaultProfile.getProfile(regionID, this.accessKeyId, this.accessKeySecret);
+        IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
+
+        InvokeCommandRequest request = new InvokeCommandRequest();
+        request.setCommandId(commandID);
+        List<String> inslist = new ArrayList<String>();
+        inslist.add(insID);
+        request.setInstanceIds(inslist);
+        try {
+            return iAcsClient.getAcsResponse(request);
+        } catch (ServerException e) {
+            e.printStackTrace();
+        } catch (ClientException clientException) {
+            clientException.printStackTrace();
+        }
+        return null;
+    }
+
+    public String createCommand(String regionID, String comtype, String command) {
+        IClientProfile iClientProfile = DefaultProfile.getProfile(regionID, this.accessKeyId, this.accessKeySecret);
+        IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
+        String str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        Random random = new Random();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i=0; i<16; i++) {
+            int num = random.nextInt(62);
+            stringBuilder.append(str.charAt(num));
+        }
+        CreateCommandRequest request = new CreateCommandRequest();
+        try {
+            request.setRegionId(regionID);
+            request.setType(comtype);
+            request.setName(stringBuilder.toString());
+            String commandb64 = Base64.encodeBase64String(command.getBytes());
+            request.setCommandContent(commandb64);
+            CreateCommandResponse response = iAcsClient.getAcsResponse(request);
+            return response.getCommandId();
+        } catch (ServerException e) {
+            e.printStackTrace();
+        } catch (ClientException clientException) {
+            clientException.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<DescribeInstancesResponse.Instance> testConnect() throws  ClientException {
+        List<DescribeInstancesResponse.Instance> list = new ArrayList<DescribeInstancesResponse.Instance>();
         IClientProfile iClientProfile = DefaultProfile.getProfile("cn-beijing", this.accessKeyId, this.accessKeySecret);
         IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
 
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         try {
-            return iAcsClient.getAcsResponse(request);
+            DescribeInstancesResponse response = iAcsClient.getAcsResponse(request);
+            for (DescribeInstancesResponse.Instance m: response.getInstances()) {
+                list.add(m);
+            }
+            return list;
         } catch (ClientException clientException) {
             clientException.printStackTrace();
             return null;
         }
     }
 
-    public void Connect() throws ClientException {
-        for (String x: map.keySet()) {
-            IClientProfile iClientProfile = DefaultProfile.getProfile(x, this.accessKeyId, this.accessKeySecret);
-            IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
-
-            // 创建API请求并设置参数
-            DescribeInstancesRequest request = new DescribeInstancesRequest();
-            try {
-                DescribeInstancesResponse response = iAcsClient.getAcsResponse(request);
-                System.out.println(JSON.toJSONString(response));
-            } catch (ClientException clientException) {
-                clientException.printStackTrace();
+    public List<DescribeInstancesResponse.Instance> DescribeIns() throws ClientException {
+        List<DescribeInstancesResponse.Instance> list = new ArrayList<DescribeInstancesResponse.Instance>();
+        for (String x: this.map.keySet()) {
+            DescribeInstancesResponse response = this.Connect(x);
+            for (DescribeInstancesResponse.Instance m: response.getInstances()) {
+                list.add(m);
             }
+        }
+        return list;
+    }
+
+    public DescribeInstancesResponse Connect(String regionid) {
+        IClientProfile iClientProfile = DefaultProfile.getProfile(regionid, this.accessKeyId, this.accessKeySecret);
+        IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
+
+        // 创建API请求并设置参数
+        DescribeInstancesRequest request = new DescribeInstancesRequest();
+        try {
+            return iAcsClient.getAcsResponse(request);
+        } catch (ClientException clientException) {
+            clientException.printStackTrace();
+            return null;
         }
     }
 
