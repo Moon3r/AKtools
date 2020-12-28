@@ -4,7 +4,6 @@ import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.ecs.model.v20140526.*;
 import com.aliyuncs.exceptions.ClientException;
-import com.aliyuncs.exceptions.ServerException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import org.apache.commons.codec.binary.Base64;
@@ -15,9 +14,9 @@ public class AliOperator {
 
     private String accessKeyId = "";
     private String accessKeySecret = "";
-    public Map<String, String> map = new HashMap();
+    public HashMap<String, String> map = new HashMap<>();
 
-    public Map<String, String> getMap() {
+    public HashMap<String, String> getMap() {
         return map;
     }
 
@@ -33,17 +32,14 @@ public class AliOperator {
 
         InvokeCommandRequest request = new InvokeCommandRequest();
         request.setCommandId(commandID);
-        List<String> inslist = new ArrayList<String>();
+        List<String> inslist = new ArrayList<>();
         inslist.add(insID);
         request.setInstanceIds(inslist);
         try {
             return iAcsClient.getAcsResponse(request);
-        } catch (ServerException e) {
-            e.printStackTrace();
-        } catch (ClientException clientException) {
-            clientException.printStackTrace();
+        } catch (ClientException e) {
+            return null;
         }
-        return null;
     }
 
     public String createCommand(String regionID, String comtype, String command) {
@@ -58,46 +54,22 @@ public class AliOperator {
         }
         CreateCommandRequest request = new CreateCommandRequest();
         try {
-            request.setRegionId(regionID);
             request.setType(comtype);
             request.setName(stringBuilder.toString());
             String commandb64 = Base64.encodeBase64String(command.getBytes());
             request.setCommandContent(commandb64);
             CreateCommandResponse response = iAcsClient.getAcsResponse(request);
             return response.getCommandId();
-        } catch (ServerException e) {
-            e.printStackTrace();
-        } catch (ClientException clientException) {
-            clientException.printStackTrace();
-        }
-        return null;
-    }
-
-    public List<DescribeInstancesResponse.Instance> testConnect() throws  ClientException {
-        List<DescribeInstancesResponse.Instance> list = new ArrayList<DescribeInstancesResponse.Instance>();
-        IClientProfile iClientProfile = DefaultProfile.getProfile("cn-beijing", this.accessKeyId, this.accessKeySecret);
-        IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
-
-        DescribeInstancesRequest request = new DescribeInstancesRequest();
-        try {
-            DescribeInstancesResponse response = iAcsClient.getAcsResponse(request);
-            for (DescribeInstancesResponse.Instance m: response.getInstances()) {
-                list.add(m);
-            }
-            return list;
-        } catch (ClientException clientException) {
-            clientException.printStackTrace();
+        } catch (ClientException e) {
             return null;
         }
     }
 
-    public List<DescribeInstancesResponse.Instance> DescribeIns() throws ClientException {
-        List<DescribeInstancesResponse.Instance> list = new ArrayList<DescribeInstancesResponse.Instance>();
-        for (String x: this.map.keySet()) {
-            DescribeInstancesResponse response = this.Connect(x);
-            for (DescribeInstancesResponse.Instance m: response.getInstances()) {
-                list.add(m);
-            }
+    public List<DescribeInstancesResponse.Instance> DescribeIns() {
+        List<DescribeInstancesResponse.Instance> list = new ArrayList<>();
+        for (Object x: this.map.keySet()) {
+            DescribeInstancesResponse response = this.Connect((String) x);
+            list.addAll(response.getInstances());
         }
         return list;
     }
@@ -111,7 +83,6 @@ public class AliOperator {
         try {
             return iAcsClient.getAcsResponse(request);
         } catch (ClientException clientException) {
-            clientException.printStackTrace();
             return null;
         }
     }
@@ -143,16 +114,8 @@ public class AliOperator {
         map.put("cn-zhangjiakou", "华北3（张家口）");
     }
 
-    public String getAccessKeySecret() {
-        return accessKeySecret;
-    }
-
     public void setAccessKeySecret(String accessKeySecret) {
         this.accessKeySecret = accessKeySecret;
-    }
-
-    public String getAccessKeyId() {
-        return accessKeyId;
     }
 
     public void setAccessKeyId(String accessKeyId) {

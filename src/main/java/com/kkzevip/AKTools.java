@@ -2,22 +2,20 @@ package com.kkzevip;
 
 import com.aliyuncs.ecs.model.v20140526.DescribeInstancesResponse;
 import com.aliyuncs.ecs.model.v20140526.InvokeCommandResponse;
-import com.aliyuncs.exceptions.ClientException;
 import com.kkzevip.utils.AliOperator;
 import com.kkzevip.utils.TableData;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.List;
 
 public class AKTools {
+
     private JLabel accessKeyIDLabel;
     private JLabel accessKeySecretLabel;
     private JPanel rootPanel;
@@ -34,109 +32,77 @@ public class AKTools {
     private JTextArea describeTextArea;
     private AliOperator aliOperator;
 
-    public void initTable() {
-        TableData tableData = new TableData(null);
-        Object[] cData = tableData.getInitColumns();
-        Object[][] cRow = tableData.getInitData();
-        TableModel tableModel = new DefaultTableModel(cRow, cData);
-        table1.setModel(tableModel);
-        JScrollPane jScrollPane = new JScrollPane(table1);
-        tablePane.add(jScrollPane);
-        tablePane.setViewportView(table1);
-        instanceText.setText("请输入实例ID，选中实例后自动填充");
-        StringBuilder dtext = new StringBuilder();
-        for (Object x: cData) {
-            dtext.append(x.toString()).append(":\t\n");
-        }
-        describeTextArea.setText(dtext.toString());
-    }
-
     public AKTools() {
 
-        initTable();
-
-        queryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                notice.setText("正在查询...");
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        String accessKeyId = accessKeyIdText.getText();
-                        String accessKeySecret = accessKeySecretText.getText();
-                        if (accessKeyId.equals("") || accessKeySecret.equals("")) {
-                            notice.setText("请检查AccessKeyID和AccessKeySecret!");
-                            return;
-                        }
-                        aliOperator = new AliOperator(accessKeyId, accessKeySecret);
-
-                        if (aliOperator.equals(null)) {
-                            notice.setText("请检查AccessKeyID和AccessKeySecret!");
-                        } else {
-                            try {
-//                                List<DescribeInstancesResponse.Instance> list = aliOperator.DescribeIns();
-                                List<DescribeInstancesResponse.Instance> list = aliOperator.testConnect();
-                                TableData tableData = new TableData(aliOperator.getMap());
-                                tableData.updateTable(list, table1);
-                            } catch (ClientException clientException) {
-                                clientException.printStackTrace();
-                            } finally {
-                                notice.setText("查询完成");
-                            }
-                        }
-                    }
-                });
-            }
-        });
-        table1.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                int n = table1.getSelectedRow();
-                String insID = table1.getValueAt(n, 1).toString();
-                instanceText.setText(insID);
-                StringBuilder text = new StringBuilder();
-                TableData tableData = new TableData(null);
-                Object[] cname = tableData.getInitColumns();
-
-                for (int i=0; i<13; i++) {
-                    text.append(cname[i].toString()).append(":\t").append(table1.getValueAt(n, i)).append("\n");
+        queryButton.addActionListener(e -> {
+            notice.setText("正在查询...");
+            SwingUtilities.invokeLater(() -> {
+                String accessKeyId = accessKeyIdText.getText();
+                String accessKeySecret = accessKeySecretText.getText();
+                if (accessKeyId.equals("") || accessKeySecret.equals("")) {
+                    notice.setText("请检查AccessKeyID和AccessKeySecret!");
+                    return;
                 }
-                describeTextArea.setText(text.toString().toString());
-            }
+                aliOperator = new AliOperator(accessKeyId, accessKeySecret);
+                try {
+                    List<DescribeInstancesResponse.Instance> list = aliOperator.DescribeIns();
+                    TableData tableData = new TableData(aliOperator.getMap());
+                    tableData.updateTable(list, table1);
+                } finally {
+                    notice.setText("查询完成");
+                }
+            });
         });
-        execButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                notice.setText("命令执行中...");
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        String comtype = "";
-                        int x = systemCom.getSelectedIndex();
-                        int n = table1.getSelectedRow();
-                        String regionID = table1.getValueAt(n, 3).toString();
-                        String command = execText.getText();
-                        String insID = instanceText.getText();
-                        switch (x) {
-                            case 2:
-                                comtype = "RunBatScript";
-                            case 3:
-                                comtype = "RunPowerShellScript";
-                            default:
-                                comtype = "RunShellScript";
-                        }
-                        String commandID = aliOperator.createCommand(regionID, comtype, command);
-                        if (commandID != null) {
-                            InvokeCommandResponse response = aliOperator.invokeCommand(regionID, insID, commandID);
-                            if (response != null) {
-                                notice.setText("命令执行成功，RequestID: " + response.getRequestId());
-                            } else {
-                                notice.setText("命令执行失败！");
-                            }
-                        }
-                    }
-                });
+        table1.getSelectionModel().addListSelectionListener(e -> {
+            int n = table1.getSelectedRow();
+            String insID = table1.getValueAt(n, 1).toString();
+            instanceText.setText(insID);
+            StringBuilder text = new StringBuilder();
+            TableData tableData = new TableData(null);
+            Object[] cname = tableData.getInitColumns();
+
+            for (int i = 0; i < 13; i++) {
+                text.append(cname[i].toString()).append(":\t").append(table1.getValueAt(n, i)).append("\n");
             }
+            describeTextArea.setText(text.toString());
+        });
+        execButton.addActionListener(e -> {
+            notice.setText("命令执行中...");
+            SwingUtilities.invokeLater(() -> {
+                String comtype;
+                int x = systemCom.getSelectedIndex();
+                int n = table1.getSelectedRow();
+                if (n == -1) {
+                    notice.setText("请输入命令");
+                    return;
+                }
+                String regionID = table1.getValueAt(n, 3).toString();
+                String command = execText.getText();
+                String insID = instanceText.getText();
+                if (insID.equals("请输入实例ID，选中实例后自动填充")) {
+                    notice.setText("请选择实例或手动输入实例ID");
+                    return;
+                }
+                switch (x) {
+                    case 2:
+                        comtype = "RunBatScript";
+                        break;
+                    case 3:
+                        comtype = "RunPowerShellScript";
+                        break;
+                    default:
+                        comtype = "RunShellScript";
+                }
+                String commandID = aliOperator.createCommand(regionID, comtype, command);
+                if (commandID != null) {
+                    InvokeCommandResponse response = aliOperator.invokeCommand(regionID, insID, commandID);
+                    if (response != null) {
+                        notice.setText("命令执行成功，RequestID: " + response.getRequestId());
+                    } else {
+                        notice.setText("命令执行失败！");
+                    }
+                }
+            });
         });
         instanceText.addFocusListener(new FocusAdapter() {
             @Override
@@ -155,17 +121,36 @@ public class AKTools {
                 }
             }
         });
+        initTable();
     }
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("AKTools\tby T00ls MoR03r");
+
+        JFrame frame = new JFrame("AKTools");
         frame.setContentPane(new AKTools().rootPanel);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);
-        frame.setSize(960, 720);
+        frame.setSize(960, 640);
         frame.setVisible(true);
     }
 
+    public void initTable() {
+
+        TableData tableData = new TableData(null);
+        final Object[] cData = tableData.getInitColumns();
+        final Object[][] cRow = tableData.getInitData();
+        final TableModel tableModel = new DefaultTableModel(cRow, cData);
+        this.table1.setModel(tableModel);
+        JScrollPane jScrollPane = new JScrollPane(this.table1);
+        tablePane.add(jScrollPane);
+        tablePane.setViewportView(table1);
+        instanceText.setText("请输入实例ID，选中实例后自动填充");
+        StringBuilder dtext = new StringBuilder();
+        for (Object x : cData) {
+            dtext.append(x.toString()).append(":\t\n");
+        }
+        describeTextArea.setText(dtext.toString());
+    }
 
 }

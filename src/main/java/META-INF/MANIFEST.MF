@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Implementation-Title: Apache HttpClient
+Automatic-Module-Name: org.apache.httpcomponents.httpclient
+Implementation-Version: 4.5.9
+Built-By: oleg
+Specification-Vendor: The Apache Software Foundation
+Specification-Title: Apache HttpClient
+Implementation-Vendor-Id: org.apache.httpcomponents
+Implementation-Vendor: The Apache Software Foundation
+Created-By: Apache Maven 3.5.4
+Build-Jdk: 1.8.0_231
+Specification-Version: 4.5
+Implementation-URL: http://hc.apache.org/httpcomponents-client
+Main-Class: com.kkzevip.AKTools
