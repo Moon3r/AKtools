@@ -1,3 +1,6 @@
+# output dir
+out/
+
 # Compiled class file
 *.class
 
