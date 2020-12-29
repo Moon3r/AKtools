@@ -12,8 +12,10 @@ import java.util.Vector;
 public class TableData {
 
     private final Object[] initColumns = {"序号", "实例ID", "服务器地区", "地区编号", "主机名称", "系统版本", "运行状态", "私有IP", "公网IP", "安全组ID", "主机配置", "创建时间", "过期时间"};
-    private final Object[][] initData = {};
-    private Map<String, String> map;
+    private final Object[][] initData = {
+            {"", "", "", "", "", "", "", "", "", "", "", "", ""}
+    };
+    private final Map<String, String> map;
 
     public TableData(Map<String, String> m) {
         this.map = m;
@@ -21,7 +23,7 @@ public class TableData {
 
     public void updateTable(List<DescribeInstancesResponse.Instance> list, JTable jTable) {
 
-         Vector<Vector<String>> cRows = new Vector<Vector<String>>();
+         Vector<Vector<String>> cRows = new Vector<>();
          int n = 1;
          for (DescribeInstancesResponse.Instance ins: list) {
              StringBuilder privateIP = new StringBuilder();
@@ -37,11 +39,11 @@ public class TableData {
              for (String sec: ins.getSecurityGroupIds()) {
                  secs.append(sec).append(",");
              }
-             Vector<String> cRow = new Vector<String>();
+             Vector<String> cRow = new Vector<>();
              cRow.add(String.valueOf(n));
              cRow.add(ins.getInstanceId());
-             cRow.add(this.map.get(ins.getBizRegionId()));
-             cRow.add(ins.getBizRegionId());
+             cRow.add(this.map.get(ins.getRegionId()));
+             cRow.add(ins.getRegionId());
              cRow.add(ins.getInstanceName());
              cRow.add(ins.getOSName());
              cRow.add(ins.getStatus());
@@ -55,7 +57,7 @@ public class TableData {
              cRows.add(cRow);
              n++;
          }
-         Vector<String> title = new Vector<String>();
+         Vector<String> title = new Vector<>();
          for (Object initColumn : initColumns) {
             title.add(initColumn.toString());
          }
