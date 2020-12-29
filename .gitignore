@@ -1,5 +1,6 @@
 # output dir
 out/
+target/
 
 # Compiled class file
 *.class
