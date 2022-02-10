@@ -66,7 +66,7 @@ public class TableData {
          jTable.setModel(tableModel);
     }
 
-    public void updateTableT(List<Instance> list, JTable jTable) {
+    public void updateTableTencet(List<Instance> list, JTable jTable) {
 
         Vector<Vector<String>> cRows = new Vector<>();
         int n = 1;
@@ -84,14 +84,16 @@ public class TableData {
             for (String sec: ins.getSecurityGroupIds()) {
                 secs.append(sec).append(",");
             }
+            String zone = ins.getPlacement().getZone();
+            String regionid = zone.substring(0, zone.lastIndexOf("-"));
             Vector<String> cRow = new Vector<>();
             cRow.add(String.valueOf(n));
             cRow.add(ins.getInstanceId());
-            cRow.add(this.map.get(ins.getPlacement()));
-            cRow.add(ins.getPlacement().toString());
+            cRow.add(this.map.get(regionid));
+            cRow.add(regionid);
             cRow.add(ins.getInstanceName());
             cRow.add(ins.getOsName());
-            cRow.add(ins.getRestrictState());
+            cRow.add(ins.getInstanceState());
             cRow.add(privateIP.substring(0, privateIP.toString().lastIndexOf(",")));
             cRow.add(publicIP.substring(0, publicIP.toString().lastIndexOf(",")));
             cRow.add(secs.substring(0, secs.toString().lastIndexOf(",")));

@@ -6,6 +6,10 @@ import com.kkzevip.utils.AliOperator;
 import com.kkzevip.utils.TableData;
 import com.kkzevip.utils.TenOperator;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
+import com.tencentcloudapi.tat.v20201028.models.Invocation;
+import com.tencentcloudapi.tat.v20201028.models.InvocationTask;
+import com.tencentcloudapi.tat.v20201028.models.TaskResult;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -70,6 +74,7 @@ public class AKTools {
 
         queryButton.addActionListener(e -> {
             notice.setText("正在查询...");
+            describeTextArea.setAutoscrolls(true);
             SwingUtilities.invokeLater(() -> {
                 String accessKeyId = accessKeyIdText.getText();
                 String accessKeySecret = accessKeySecretText.getText();
@@ -93,29 +98,26 @@ public class AKTools {
                 switch (currentCloud) {
                     case "tencent":
                         tenOperator = new TenOperator(accessKeyId, accessKeySecret);
-                        try {
-                            List<Instance> list = tenOperator.DescribeIns();
-                            if (list == null) {
-                                initTable();
-                            } else {
-                                TableData tableData = new TableData(tenOperator.getMap());
-                                tableData.updateTableT(list, table1);
-                            }
-                        } finally {
+                        List<Instance> list = tenOperator.DescribeIns();
+                        if (list == null) {
+                            initTable();
+                            notice.setText("SecretID或SecretKey有误！");
+                        } else {
+                            TableData tableData = new TableData(tenOperator.getMap());
+                            tableData.updateTableTencet(list, this.table1);
                             notice.setText("查询完成");
                         }
+                        break;
                     case "aliyun":
                     default:
                         aliOperator = new AliOperator(accessKeyId, accessKeySecret);
-                        try {
-                            List<DescribeInstancesResponse.Instance> list = aliOperator.DescribeIns();
-                            if (list == null) {
-                                initTable();
-                            } else {
-                                TableData tableData = new TableData(aliOperator.getMap());
-                                tableData.updateTableA(list, table1);
-                            }
-                        } finally {
+                        List<DescribeInstancesResponse.Instance> listaliyun = aliOperator.DescribeIns();
+                        if (listaliyun == null) {
+                            initTable();
+                            notice.setText("AccessKeyID或AccessKeySecret有误！");
+                        } else {
+                            TableData tableData = new TableData(aliOperator.getMap());
+                            tableData.updateTableA(listaliyun, this.table1);
                             notice.setText("查询完成");
                         }
                 }
@@ -165,12 +167,22 @@ public class AKTools {
                         } else {
                             comtype = "SHELL";
                         }
-                        com.tencentcloudapi.tat.v20201028.models.RunCommandResponse responset = tenOperator.runCommand(regionID, insID, comtype, command);
+                        com.tencentcloudapi.tat.v20201028.models.DescribeInvocationTasksResponse responset = tenOperator.runCommand(regionID, insID, comtype, command);
                         if (responset != null) {
                             notice.setText("命令执行成功，RequestID: " + responset.getRequestId());
+                            InvocationTask[] tasks = responset.getInvocationTaskSet();
+                            StringBuilder stringBuilder = new StringBuilder();
+                            String r;
+                            for (InvocationTask task: tasks) {
+                                r = task.getTaskResult().getOutput();
+                                stringBuilder.append(new String(Base64.decodeBase64(r)));
+                                stringBuilder.append("\n");
+                            }
+                            describeTextArea.setText(stringBuilder.toString());
                         } else {
                             notice.setText("命令执行失败！");
                         }
+                        break;
                     case "aliyun":
                     default:
                         switch (x) {
@@ -224,7 +236,6 @@ public class AKTools {
     }
 
     public static void main(String[] args) {
-
         JFrame frame = new JFrame("AKTools");
         frame.setContentPane(new AKTools().rootPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

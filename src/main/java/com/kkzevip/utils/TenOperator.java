@@ -3,12 +3,12 @@ package com.kkzevip.utils;
 import com.tencentcloudapi.common.Credential;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.cvm.v20170312.CvmClient;
-import com.tencentcloudapi.cvm.v20170312.models.DescribeInstancesRequest;
-import com.tencentcloudapi.cvm.v20170312.models.DescribeInstancesResponse;
-import com.tencentcloudapi.cvm.v20170312.models.Instance;
+import com.tencentcloudapi.cvm.v20170312.models.*;
 import com.tencentcloudapi.tat.v20201028.TatClient;
 import com.tencentcloudapi.tat.v20201028.models.*;
+import com.tencentcloudapi.tat.v20201028.models.Filter;
 import org.apache.commons.codec.binary.Base64;
+import sun.security.krb5.internal.crypto.Des;
 
 import java.util.*;
 
@@ -31,7 +31,7 @@ public class TenOperator {
         initCred();
     }
 
-    public RunCommandResponse runCommand(String regionid, String insID, String comtype, String command) {
+    public DescribeInvocationTasksResponse runCommand(String regionid, String insID, String comtype, String command) {
         TatClient tatClient = new TatClient(this.credential, regionid);
 
         String cname = UUID.randomUUID().toString();
@@ -43,7 +43,27 @@ public class TenOperator {
             request.setInstanceIds(inslist);
             String commandb64 = Base64.encodeBase64String(command.getBytes());
             request.setContent(commandb64);
-            return tatClient.RunCommand(request);
+            RunCommandResponse response = tatClient.RunCommand(request);
+            String invocationId = response.getInvocationId();
+            Thread.sleep(2000);
+            return getInvokeResult(tatClient, invocationId);
+        } catch (TencentCloudSDKException | InterruptedException e) {
+            return null;
+        }
+    }
+
+    public DescribeInvocationTasksResponse getInvokeResult(TatClient tatClient, String invocationId) {
+
+        DescribeInvocationTasksRequest request = new DescribeInvocationTasksRequest();
+        Filter filter = new Filter();
+        filter.setName("invocation-id");
+        filter.setValues(new String[]{invocationId});
+        Filter[] filters = new Filter[]{filter};
+        request.setFilters(filters);
+        request.setLimit(1L);
+        request.setHideOutput(false);
+        try {
+            return tatClient.DescribeInvocationTasks(request);
         } catch (TencentCloudSDKException e) {
             return null;
         }
