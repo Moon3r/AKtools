@@ -6,7 +6,7 @@
       <xy x="20" y="20" width="887" height="484"/>
     </constraints>
     <properties/>
-    <border type="line" title="阿里云AccessKey利用工具">
+    <border type="line" title="AccessKey利用工具">
       <font/>
       <title-color color="-4473925"/>
       <color color="-4473925"/>
@@ -132,19 +132,6 @@
         </constraints>
         <properties/>
       </component>
-      <component id="1fc61" class="javax.swing.JButton" binding="queryButton">
-        <constraints>
-          <grid row="0" column="3" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <font/>
-          <hideActionText value="false"/>
-          <text value="查询"/>
-        </properties>
-        <clientProperties>
-          <hideActionText class="java.lang.Boolean" value="false"/>
-        </clientProperties>
-      </component>
       <component id="9e4" class="javax.swing.JButton" binding="execButton">
         <constraints>
           <grid row="6" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
@@ -173,6 +160,30 @@
         <properties>
           <font style="1"/>
           <text value="结果查看"/>
+        </properties>
+      </component>
+      <component id="1fc61" class="javax.swing.JButton" binding="queryButton">
+        <constraints>
+          <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <font/>
+          <hideActionText value="false"/>
+          <text value="查询"/>
+        </properties>
+        <clientProperties>
+          <hideActionText class="java.lang.Boolean" value="false"/>
+        </clientProperties>
+      </component>
+      <component id="83f34" class="javax.swing.JComboBox" binding="cloudName">
+        <constraints>
+          <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <model>
+            <item value="Aliyun"/>
+            <item value="Tencent"/>
+          </model>
         </properties>
       </component>
     </children>

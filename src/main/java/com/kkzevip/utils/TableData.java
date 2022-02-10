@@ -1,6 +1,7 @@
 package com.kkzevip.utils;
 
 import com.aliyuncs.ecs.model.v20140526.DescribeInstancesResponse;
+import com.tencentcloudapi.cvm.v20170312.models.Instance;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -21,7 +22,7 @@ public class TableData {
         this.map = m;
     }
 
-    public void updateTable(List<DescribeInstancesResponse.Instance> list, JTable jTable) {
+    public void updateTableA(List<DescribeInstancesResponse.Instance> list, JTable jTable) {
 
          Vector<Vector<String>> cRows = new Vector<>();
          int n = 1;
@@ -63,6 +64,50 @@ public class TableData {
          }
          TableModel tableModel = new DefaultTableModel(cRows, title);
          jTable.setModel(tableModel);
+    }
+
+    public void updateTableT(List<Instance> list, JTable jTable) {
+
+        Vector<Vector<String>> cRows = new Vector<>();
+        int n = 1;
+        for (Instance ins: list) {
+            StringBuilder privateIP = new StringBuilder();
+            StringBuilder publicIP = new StringBuilder();
+            StringBuilder secs = new StringBuilder();
+            String configs = ins.getCPU() + "核" + ins.getMemory() + "MB";
+            for (String ip: ins.getPrivateIpAddresses()) {
+                privateIP.append(ip).append(",");
+            }
+            for (String ip: ins.getPublicIpAddresses()) {
+                publicIP.append(ip).append(",");
+            }
+            for (String sec: ins.getSecurityGroupIds()) {
+                secs.append(sec).append(",");
+            }
+            Vector<String> cRow = new Vector<>();
+            cRow.add(String.valueOf(n));
+            cRow.add(ins.getInstanceId());
+            cRow.add(this.map.get(ins.getPlacement()));
+            cRow.add(ins.getPlacement().toString());
+            cRow.add(ins.getInstanceName());
+            cRow.add(ins.getOsName());
+            cRow.add(ins.getRestrictState());
+            cRow.add(privateIP.substring(0, privateIP.toString().lastIndexOf(",")));
+            cRow.add(publicIP.substring(0, publicIP.toString().lastIndexOf(",")));
+            cRow.add(secs.substring(0, secs.toString().lastIndexOf(",")));
+            cRow.add(configs);
+            cRow.add(ins.getCreatedTime());
+            cRow.add(ins.getExpiredTime());
+
+            cRows.add(cRow);
+            n++;
+        }
+        Vector<String> title = new Vector<>();
+        for (Object initColumn : initColumns) {
+            title.add(initColumn.toString());
+        }
+        TableModel tableModel = new DefaultTableModel(cRows, title);
+        jTable.setModel(tableModel);
     }
 
     public Object[] getInitColumns() {

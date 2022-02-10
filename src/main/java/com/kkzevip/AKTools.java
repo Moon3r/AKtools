@@ -4,6 +4,8 @@ import com.aliyuncs.ecs.model.v20140526.DescribeInstancesResponse;
 import com.aliyuncs.ecs.model.v20140526.InvokeCommandResponse;
 import com.kkzevip.utils.AliOperator;
 import com.kkzevip.utils.TableData;
+import com.kkzevip.utils.TenOperator;
+import com.tencentcloudapi.cvm.v20170312.models.Instance;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -30,9 +32,41 @@ public class AKTools {
     private JComboBox systemCom;
     private JTextField execText;
     private JTextArea describeTextArea;
+    private JComboBox cloudName;
     private AliOperator aliOperator;
+    private TenOperator tenOperator;
+    public String currentCloud = "aliyun";
 
     public AKTools() {
+
+        cloudName.addActionListener(e -> {
+            int selid = cloudName.getSelectedIndex();
+            String aid = "";
+            String ast = "";
+            switch (selid) {
+                case 1:
+                    aid = String.format("%-24s", "SecretID:");
+                    ast = String.format("%-24s", "SecretKey:");
+                    accessKeyIDLabel.setText(aid);
+                    accessKeySecretLabel.setText(ast);
+                    systemCom.removeAllItems();
+                    systemCom.addItem("默认");
+                    systemCom.addItem("SHELL");
+                    systemCom.addItem("POWERSHELL");
+                    currentCloud = "tencent";
+                    break;
+                default:
+                    aid = String.format("%s", "AccessKeyID:");
+                    ast = String.format("%s", "AccessKeySecret:");
+                    accessKeyIDLabel.setText(aid);
+                    accessKeySecretLabel.setText(ast);
+                    systemCom.addItem("默认");
+                    systemCom.addItem("Linux Shell Script");
+                    systemCom.addItem("Windows Bat Script");
+                    systemCom.addItem("Windows Powershell Script");
+                    currentCloud = "aliyun";
+            }
+        });
 
         queryButton.addActionListener(e -> {
             notice.setText("正在查询...");
@@ -40,31 +74,72 @@ public class AKTools {
                 String accessKeyId = accessKeyIdText.getText();
                 String accessKeySecret = accessKeySecretText.getText();
                 if (accessKeyId.equals("") || accessKeySecret.equals("")) {
-                    notice.setText("请检查AccessKeyID和AccessKeySecret!");
+                    String aid = "";
+                    String ast = "";
+                    switch (currentCloud) {
+                        case "tencent":
+                            aid = "SecretID";
+                            ast = "SecretKey";
+                            break;
+                        case "aliyun":
+                        default:
+                            aid = "AccessKeyID";
+                            ast = "AccessKeySecret";
+                    }
+                    String tips = String.format("请检查%s和%s!", aid, ast);
+                    notice.setText(tips);
                     return;
                 }
-                aliOperator = new AliOperator(accessKeyId, accessKeySecret);
-                try {
-                    List<DescribeInstancesResponse.Instance> list = aliOperator.DescribeIns();
-                    TableData tableData = new TableData(aliOperator.getMap());
-                    tableData.updateTable(list, table1);
-                } finally {
-                    notice.setText("查询完成");
+                switch (currentCloud) {
+                    case "tencent":
+                        tenOperator = new TenOperator(accessKeyId, accessKeySecret);
+                        try {
+                            List<Instance> list = tenOperator.DescribeIns();
+                            if (list == null) {
+                                initTable();
+                            } else {
+                                TableData tableData = new TableData(tenOperator.getMap());
+                                tableData.updateTableT(list, table1);
+                            }
+                        } finally {
+                            notice.setText("查询完成");
+                        }
+                    case "aliyun":
+                    default:
+                        aliOperator = new AliOperator(accessKeyId, accessKeySecret);
+                        try {
+                            List<DescribeInstancesResponse.Instance> list = aliOperator.DescribeIns();
+                            if (list == null) {
+                                initTable();
+                            } else {
+                                TableData tableData = new TableData(aliOperator.getMap());
+                                tableData.updateTableA(list, table1);
+                            }
+                        } finally {
+                            notice.setText("查询完成");
+                        }
                 }
             });
         });
         table1.getSelectionModel().addListSelectionListener(e -> {
             int n = table1.getSelectedRow();
-            String insID = table1.getValueAt(n, 1).toString();
-            instanceText.setText(insID);
-            StringBuilder text = new StringBuilder();
-            TableData tableData = new TableData(null);
-            Object[] cname = tableData.getInitColumns();
+            try {
+                String insID = table1.getValueAt(n, 1).toString();
+                if (insID.equals("") || insID == null) {
+                    return;
+                }
+                instanceText.setText(insID);
+                StringBuilder text = new StringBuilder();
+                TableData tableData = new TableData(null);
+                Object[] cname = tableData.getInitColumns();
 
-            for (int i = 0; i < 13; i++) {
-                text.append(cname[i].toString()).append(":\t").append(table1.getValueAt(n, i)).append("\n");
+                for (int i = 0; i < 13; i++) {
+                    text.append(cname[i].toString()).append(":\t").append(table1.getValueAt(n, i)).append("\n");
+                }
+                describeTextArea.setText(text.toString());
+            } catch (Exception exception) {
+                exception.printStackTrace();
             }
-            describeTextArea.setText(text.toString());
         });
         execButton.addActionListener(e -> {
             notice.setText("命令执行中...");
@@ -83,25 +158,49 @@ public class AKTools {
                     notice.setText("请选择实例或手动输入实例ID");
                     return;
                 }
-                switch (x) {
-                    case 2:
-                        comtype = "RunBatScript";
-                        break;
-                    case 3:
-                        comtype = "RunPowerShellScript";
-                        break;
+                switch (currentCloud) {
+                    case "tencent":
+                        if (x == 2) {
+                            comtype = "POWERSHELL";
+                        } else {
+                            comtype = "SHELL";
+                        }
+                        com.tencentcloudapi.tat.v20201028.models.RunCommandResponse responset = tenOperator.runCommand(regionID, insID, comtype, command);
+                        if (responset != null) {
+                            notice.setText("命令执行成功，RequestID: " + responset.getRequestId());
+                        } else {
+                            notice.setText("命令执行失败！");
+                        }
+                    case "aliyun":
                     default:
-                        comtype = "RunShellScript";
+                        switch (x) {
+                            case 2:
+                                comtype = "RunBatScript";
+                                break;
+                            case 3:
+                                comtype = "RunPowerShellScript";
+                                break;
+                            default:
+                                comtype = "RunShellScript";
+                        }
+//                        String commandID = aliOperator.createCommand(regionID, comtype, command);
+//                        if (commandID != null) {
+//                            InvokeCommandResponse response = aliOperator.invokeCommand(regionID, insID, commandID);
+//                            if (response != null) {
+//                                notice.setText("命令执行成功，RequestID: " + response.getRequestId());
+//                            } else {
+//                                notice.setText("命令执行失败！");
+//                            }
+//                        }
+                        com.aliyuncs.ecs.model.v20140526.RunCommandResponse response = aliOperator.runCommand(regionID, insID, comtype, command);
+                        if (response != null) {
+                            notice.setText("命令执行成功，RequestID: " + response.getRequestId());
+                        } else {
+                            notice.setText("命令执行失败！");
+                        }
                 }
-                String commandID = aliOperator.createCommand(regionID, comtype, command);
-                if (commandID != null) {
-                    InvokeCommandResponse response = aliOperator.invokeCommand(regionID, insID, commandID);
-                    if (response != null) {
-                        notice.setText("命令执行成功，RequestID: " + response.getRequestId());
-                    } else {
-                        notice.setText("命令执行失败！");
-                    }
-                }
+
+
             });
         });
         instanceText.addFocusListener(new FocusAdapter() {

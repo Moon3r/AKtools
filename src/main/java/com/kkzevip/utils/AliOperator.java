@@ -26,6 +26,26 @@ public class AliOperator {
         initRegion();
     }
 
+    public RunCommandResponse runCommand(String regionID, String insID, String comtype, String command) {
+        IClientProfile iClientProfile = DefaultProfile.getProfile(regionID, this.accessKeyId, this.accessKeySecret);
+        IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
+
+        RunCommandRequest request = new RunCommandRequest();
+        try {
+            List<String> inslist = new ArrayList<>();
+            inslist.add(insID);
+            request.setInstanceIds(inslist);
+            request.setType(comtype);
+            String cname = UUID.randomUUID().toString();
+            request.setName(cname);
+            String commandb64 = Base64.encodeBase64String(command.getBytes());
+            request.setCommandContent(commandb64);
+            return iAcsClient.getAcsResponse(request);
+        } catch (ClientException e) {
+            return null;
+        }
+    }
+
     public InvokeCommandResponse invokeCommand(String regionID, String insID, String commandID) {
         IClientProfile iClientProfile = DefaultProfile.getProfile(regionID, this.accessKeyId, this.accessKeySecret);
         IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
@@ -67,9 +87,13 @@ public class AliOperator {
 
     public List<DescribeInstancesResponse.Instance> DescribeIns() {
         List<DescribeInstancesResponse.Instance> list = new ArrayList<>();
-        for (Object x: this.map.keySet()) {
-            DescribeInstancesResponse response = this.Connect((String) x);
-            list.addAll(response.getInstances());
+        try {
+            for (Object x: this.map.keySet()) {
+                DescribeInstancesResponse response = this.Connect((String) x);
+                list.addAll(response.getInstances());
+            }
+        } catch (NullPointerException e) {
+            return null;
         }
         return list;
     }
