@@ -1,21 +1,16 @@
 package com.kkzevip;
 
 import com.aliyuncs.ecs.model.v20140526.DescribeInstancesResponse;
-import com.aliyuncs.ecs.model.v20140526.InvokeCommandResponse;
 import com.kkzevip.utils.AliOperator;
 import com.kkzevip.utils.TableData;
 import com.kkzevip.utils.TenOperator;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
-import com.tencentcloudapi.tat.v20201028.models.Invocation;
 import com.tencentcloudapi.tat.v20201028.models.InvocationTask;
-import com.tencentcloudapi.tat.v20201028.models.TaskResult;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.List;
@@ -195,15 +190,6 @@ public class AKTools {
                             default:
                                 comtype = "RunShellScript";
                         }
-//                        String commandID = aliOperator.createCommand(regionID, comtype, command);
-//                        if (commandID != null) {
-//                            InvokeCommandResponse response = aliOperator.invokeCommand(regionID, insID, commandID);
-//                            if (response != null) {
-//                                notice.setText("命令执行成功，RequestID: " + response.getRequestId());
-//                            } else {
-//                                notice.setText("命令执行失败！");
-//                            }
-//                        }
                         com.aliyuncs.ecs.model.v20140526.RunCommandResponse response = aliOperator.runCommand(regionID, insID, comtype, command);
                         if (response != null) {
                             notice.setText("命令执行成功，RequestID: " + response.getRequestId());
@@ -237,7 +223,9 @@ public class AKTools {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("AKTools");
-        frame.setContentPane(new AKTools().rootPanel);
+        AKTools akTools = new AKTools();
+        akTools.rootPanel.setName("AKTools");
+        frame.setContentPane(akTools.rootPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setLocationRelativeTo(null);

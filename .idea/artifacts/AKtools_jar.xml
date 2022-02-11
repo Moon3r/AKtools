@@ -2,13 +2,10 @@
   <artifact type="jar" name="AKtools:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/AKtools_jar</output-path>
     <root id="archive" name="AKtools.jar">
-      <element id="module-output" name="AKtools" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/apache/httpcomponents/httpclient/4.5.9/httpclient-4.5.9.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/aliyun/aliyun-java-sdk-core/4.4.3/aliyun-java-sdk-core-4.4.3.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/commons-codec/commons-codec/1.11/commons-codec-1.11.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/aliyun/aliyun-java-sdk-rds/2.3.9/aliyun-java-sdk-rds-2.3.9.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/javax/xml/bind/jaxb-api/2.1/jaxb-api-2.1.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/aliyun/aliyun-java-sdk-ram/3.1.0/aliyun-java-sdk-ram-3.1.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jacoco/org.jacoco.agent/0.8.3/org.jacoco.agent-0.8.3-runtime.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.26/slf4j-api-1.7.26.jar" path-in-jar="/" />
