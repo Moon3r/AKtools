@@ -13,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.HashMap;
 import java.util.List;
 
 public class AKTools {
@@ -32,6 +33,9 @@ public class AKTools {
     private JTextField execText;
     private JTextArea describeTextArea;
     private JComboBox cloudName;
+    private JScrollPane scrollPane;
+    private JLabel resultDisplay;
+    //    private JLabel resultDisplay;
     private AliOperator aliOperator;
     private TenOperator tenOperator;
     public String currentCloud = "aliyun";
@@ -167,9 +171,8 @@ public class AKTools {
                             notice.setText("命令执行成功，RequestID: " + responset.getRequestId());
                             InvocationTask[] tasks = responset.getInvocationTaskSet();
                             StringBuilder stringBuilder = new StringBuilder();
-                            String r;
                             for (InvocationTask task: tasks) {
-                                r = task.getTaskResult().getOutput();
+                                String r = task.getTaskResult().getOutput();
                                 stringBuilder.append(new String(Base64.decodeBase64(r)));
                                 stringBuilder.append("\n");
                             }
@@ -190,14 +193,14 @@ public class AKTools {
                             default:
                                 comtype = "RunShellScript";
                         }
-                        com.aliyuncs.ecs.model.v20140526.RunCommandResponse response = aliOperator.runCommand(regionID, insID, comtype, command);
-                        if (response != null) {
-                            notice.setText("命令执行成功，RequestID: " + response.getRequestId());
-                        } else {
+                        HashMap<String, String> response = aliOperator.runCommand(regionID, insID, comtype, command);
+                        if (response == null) {
                             notice.setText("命令执行失败！");
+                        } else {
+                            notice.setText("命令执行成功！" + response.get("status"));
+                            describeTextArea.setText(response.get("result"));
                         }
                 }
-
 
             });
         });

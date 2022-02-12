@@ -26,7 +26,7 @@ public class AliOperator {
         initRegion();
     }
 
-    public RunCommandResponse runCommand(String regionID, String insID, String comtype, String command) {
+    public HashMap<String, String> runCommand(String regionID, String insID, String comtype, String command) {
         IClientProfile iClientProfile = DefaultProfile.getProfile(regionID, this.accessKeyId, this.accessKeySecret);
         IAcsClient iAcsClient = new DefaultAcsClient(iClientProfile);
 
@@ -40,6 +40,39 @@ public class AliOperator {
             request.setName(cname);
             String commandb64 = Base64.encodeBase64String(command.getBytes());
             request.setCommandContent(commandb64);
+            request.setContentEncoding("Base64");
+            RunCommandResponse response = iAcsClient.getAcsResponse(request);
+            String invid = response.getInvokeId();
+            HashMap<String, String> resultmap = new HashMap<>();
+            StringBuilder stringBuilder = new StringBuilder();
+            while (true) {
+                Thread.sleep(2000);
+                DescribeInvocationResultsResponse resultsResponse = getInvokeResult(iAcsClient, invid);
+                DescribeInvocationResultsResponse.Invocation invocation = resultsResponse.getInvocation();
+                List<DescribeInvocationResultsResponse.Invocation.InvocationResult> results = invocation.getInvocationResults();
+                DescribeInvocationResultsResponse.Invocation.InvocationResult result = results.get(0);
+                if (!(result.getInvocationStatus().equals("Pending") || result.getInvocationStatus().equals("Running"))) {
+                    String r = result.getOutput();
+                    stringBuilder.append(new String(Base64.decodeBase64(r)));
+                    stringBuilder.append("\n");
+                    resultmap.put("result", stringBuilder.toString());
+                    resultmap.put("status", result.getInvocationStatus());
+                    break;
+                }
+            }
+
+            return resultmap;
+        } catch (ClientException | InterruptedException e) {
+            return null;
+        }
+    }
+
+    public DescribeInvocationResultsResponse getInvokeResult(IAcsClient iAcsClient, String invid) {
+        DescribeInvocationResultsRequest request = new DescribeInvocationResultsRequest();
+
+        request.setInvokeId(invid);
+        request.setPageSize(1L);
+        try {
             return iAcsClient.getAcsResponse(request);
         } catch (ClientException e) {
             return null;
