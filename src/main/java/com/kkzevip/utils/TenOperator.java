@@ -31,7 +31,7 @@ public class TenOperator {
         initCred();
     }
 
-    public DescribeInvocationTasksResponse runCommand(String regionid, String insID, String comtype, String command) {
+    public HashMap<String, String> runCommand(String regionid, String insID, String comtype, String command) {
         TatClient tatClient = new TatClient(this.credential, regionid);
 
         String cname = UUID.randomUUID().toString();
@@ -45,8 +45,26 @@ public class TenOperator {
             request.setContent(commandb64);
             RunCommandResponse response = tatClient.RunCommand(request);
             String invocationId = response.getInvocationId();
-            Thread.sleep(2000);
-            return getInvokeResult(tatClient, invocationId);
+            HashMap<String, String> resultmap = new HashMap<>();
+            StringBuilder stringBuilder = new StringBuilder();
+            while (true) {
+                Thread.sleep(2000);
+                DescribeInvocationTasksResponse results = getInvokeResult(tatClient, invocationId);
+                InvocationTask result = results.getInvocationTaskSet()[0];
+                String status = result.getTaskStatus();
+                if (status.equals("PENDING") ||
+                    status.equals("DELIVERING") ||
+                    status.equals("RUNNING") ||
+                    status.equals("CANCELLING")) {
+                    String r = result.getTaskResult().getOutput();
+                    stringBuilder.append(new String(Base64.decodeBase64(r)));
+                    stringBuilder.append("\n");
+                    resultmap.put("result", stringBuilder.toString());
+                    resultmap.put("status", status);
+                    break;
+                }
+            }
+            return resultmap;
         } catch (TencentCloudSDKException | InterruptedException e) {
             return null;
         }

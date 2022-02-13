@@ -51,12 +51,15 @@ public class AliOperator {
                 DescribeInvocationResultsResponse.Invocation invocation = resultsResponse.getInvocation();
                 List<DescribeInvocationResultsResponse.Invocation.InvocationResult> results = invocation.getInvocationResults();
                 DescribeInvocationResultsResponse.Invocation.InvocationResult result = results.get(0);
-                if (!(result.getInvocationStatus().equals("Pending") || result.getInvocationStatus().equals("Running"))) {
+                String status = result.getInvocationStatus();
+                if (!(status.equals("Pending") ||
+                        status.equals("Running") ||
+                        status.equals("Stopping"))) {
                     String r = result.getOutput();
                     stringBuilder.append(new String(Base64.decodeBase64(r)));
                     stringBuilder.append("\n");
                     resultmap.put("result", stringBuilder.toString());
-                    resultmap.put("status", result.getInvocationStatus());
+                    resultmap.put("status", status);
                     break;
                 }
             }

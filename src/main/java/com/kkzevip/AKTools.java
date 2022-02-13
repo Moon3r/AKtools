@@ -166,19 +166,12 @@ public class AKTools {
                         } else {
                             comtype = "SHELL";
                         }
-                        com.tencentcloudapi.tat.v20201028.models.DescribeInvocationTasksResponse responset = tenOperator.runCommand(regionID, insID, comtype, command);
-                        if (responset != null) {
-                            notice.setText("命令执行成功，RequestID: " + responset.getRequestId());
-                            InvocationTask[] tasks = responset.getInvocationTaskSet();
-                            StringBuilder stringBuilder = new StringBuilder();
-                            for (InvocationTask task: tasks) {
-                                String r = task.getTaskResult().getOutput();
-                                stringBuilder.append(new String(Base64.decodeBase64(r)));
-                                stringBuilder.append("\n");
-                            }
-                            describeTextArea.setText(stringBuilder.toString());
-                        } else {
+                        HashMap<String, String> responset = tenOperator.runCommand(regionID, insID, comtype, command);
+                        if (responset == null) {
                             notice.setText("命令执行失败！");
+                        } else {
+                            notice.setText("命令执行成功！" + responset.get("status"));
+                            describeTextArea.setText(responset.get("result"));
                         }
                         break;
                     case "aliyun":
