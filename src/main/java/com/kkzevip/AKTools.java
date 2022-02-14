@@ -5,8 +5,6 @@ import com.kkzevip.utils.AliOperator;
 import com.kkzevip.utils.TableData;
 import com.kkzevip.utils.TenOperator;
 import com.tencentcloudapi.cvm.v20170312.models.Instance;
-import com.tencentcloudapi.tat.v20201028.models.InvocationTask;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -29,21 +27,31 @@ public class AKTools {
     private JLabel notice;
     private JButton execButton;
     private JTextField instanceText;
-    private JComboBox systemCom;
+    private JComboBox<String> systemCom;
     private JTextField execText;
     private JTextArea describeTextArea;
     private JComboBox cloudName;
     private JScrollPane scrollPane;
     private JLabel resultDisplay;
-    //    private JLabel resultDisplay;
+    private JLabel status;
+    private JLabel insID;
+    private JLabel system;
+    private JLabel command;
     private AliOperator aliOperator;
     private TenOperator tenOperator;
     public String currentCloud = "aliyun";
 
     public AKTools() {
 
+        rootPanel.setSize(960, 640);
+
         cloudName.addActionListener(e -> {
-            int selid = cloudName.getSelectedIndex();
+            int selid = 0;
+            try {
+                selid = cloudName.getSelectedIndex();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             String aid = "";
             String ast = "";
             switch (selid) {
@@ -63,6 +71,7 @@ public class AKTools {
                     ast = String.format("%s", "AccessKeySecret:");
                     accessKeyIDLabel.setText(aid);
                     accessKeySecretLabel.setText(ast);
+                    systemCom.removeAllItems();
                     systemCom.addItem("默认");
                     systemCom.addItem("Linux Shell Script");
                     systemCom.addItem("Windows Bat Script");
@@ -122,6 +131,7 @@ public class AKTools {
                 }
             });
         });
+
         table1.getSelectionModel().addListSelectionListener(e -> {
             int n = table1.getSelectedRow();
             try {
@@ -145,7 +155,7 @@ public class AKTools {
         execButton.addActionListener(e -> {
             notice.setText("命令执行中...");
             SwingUtilities.invokeLater(() -> {
-                String comtype;
+                String comtype = "";
                 int x = systemCom.getSelectedIndex();
                 int n = table1.getSelectedRow();
                 if (n == -1) {
@@ -197,6 +207,7 @@ public class AKTools {
 
             });
         });
+
         instanceText.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -220,7 +231,6 @@ public class AKTools {
     public static void main(String[] args) {
         JFrame frame = new JFrame("AKTools");
         AKTools akTools = new AKTools();
-        akTools.rootPanel.setName("AKTools");
         frame.setContentPane(akTools.rootPanel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();

@@ -8,7 +8,6 @@ import com.tencentcloudapi.tat.v20201028.TatClient;
 import com.tencentcloudapi.tat.v20201028.models.*;
 import com.tencentcloudapi.tat.v20201028.models.Filter;
 import org.apache.commons.codec.binary.Base64;
-import sun.security.krb5.internal.crypto.Des;
 
 import java.util.*;
 
