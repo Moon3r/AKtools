@@ -1,6 +1,7 @@
 # output dir
 out/
 target/
+.idea/
 
 # Compiled class file
 *.class
